@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hart Medical - NDC Conference Presentation</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,400;1,500&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap');
+
+  :root {
+    --maroon: #7A0B05;
+    --rose: #EAD0D5;
+    --rose-light: #f7eef0;
+    --cream: #FAF7F3;
+    --charcoal: #1C1917;
+    --warm-gray: #78716C;
+    --warm-gray-light: #A8A29E;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ============================================
+     GRAIN OVERLAY (global texture)
+     ============================================ */
+  .grain {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 200px;
+  }
+
+  /* ============================================
+     FLOATING ORBS (reusable)
+     ============================================ */
+  .orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    will-change: transform;
+  }
+
+  .orb-rose {
+    background: var(--rose);
+  }
+
+  .orb-maroon {
+    background: var(--maroon);
+  }
+
+  .orb-cream {
+    background: #F5E6D0;
+  }
+
+  @keyframes float1 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(30px, -40px) scale(1.05); }
+    66% { transform: translate(-20px, 20px) scale(0.95); }
+  }
+
+  @keyframes float2 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(-40px, 30px) scale(0.95); }
+    66% { transform: translate(25px, -25px) scale(1.08); }
+  }
+
+  @keyframes float3 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(20px, 30px) scale(1.03); }
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 0.7; }
+  }
+
+  @keyframes shimmer {
+    0% { background-position: -200% center; }
+    100% { background-position: 200% center; }
+  }
+
+  /* ============================================
+     DECK & SLIDES
+     ============================================ */
+  .deck {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+  }
+
+  .slide {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+  }
+
+  .slide.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* Nav */
+  .nav-bar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: 36px;
+    background: rgba(250,247,243,0.85);
+    backdrop-filter: blur(20px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    gap: 16px;
+  }
+
+  .nav-bar .slide-counter {
+    color: var(--warm-gray-light);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 2px;
+  }
+
+  .nav-bar .progress-bar {
+    width: 120px;
+    height: 1.5px;
+    background: var(--rose);
+    border-radius: 1px;
+    overflow: hidden;
+  }
+
+  .nav-bar .progress-fill {
+    height: 100%;
+    background: var(--rose);
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* ============================================
+     SLIDE 1 - TITLE
+     ============================================ */
+  .slide-title {
+    background: var(--cream);
+    text-align: center;
+  }
+
+  .slide-title .orb-a {
+    width: 500px; height: 500px;
+    top: -10%; left: -5%;
+    opacity: 0.4;
+    animation: float1 12s ease-in-out infinite;
+  }
+
+  .slide-title .orb-b {
+    width: 400px; height: 400px;
+    bottom: -15%; right: -5%;
+    opacity: 0.2;
+    animation: float2 15s ease-in-out infinite;
+  }
+
+  .slide-title .orb-c {
+    width: 250px; height: 250px;
+    top: 30%; right: 20%;
+    opacity: 0.15;
+    animation: float3 10s ease-in-out infinite;
+  }
+
+  .slide-title .logo-mark {
+    position: relative;
+    z-index: 1;
+    margin-bottom: 48px;
+  }
+
+  .slide-title .logo-mark img {
+    width: 100px;
+    opacity: 0.85;
+    filter: drop-shadow(0 0 40px rgba(234,208,213,0.3));
+  }
+
+  .slide-title h1 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 96px;
+    font-weight: 300;
+    color: var(--charcoal);
+    letter-spacing: -2px;
+    line-height: 1;
+    position: relative;
+    z-index: 1;
+  }
+
+  .slide-title .sub {
+    margin-top: 32px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    color: var(--maroon);
+    position: relative;
+    z-index: 1;
+    opacity: 0.7;
+  }
+
+  /* ============================================
+     SLIDE 2 - THE QUOTE
+     ============================================ */
+  .slide-quote {
+    background: var(--cream);
+    text-align: center;
+    padding: 0 12%;
+  }
+
+  .slide-quote .orb-a {
+    width: 600px; height: 600px;
+    top: 10%; left: 10%;
+    opacity: 0.3;
+    animation: float1 14s ease-in-out infinite;
+  }
+
+  .slide-quote .orb-b {
+    width: 350px; height: 350px;
+    bottom: 5%; right: 15%;
+    opacity: 0.15;
+    animation: float2 11s ease-in-out infinite;
+  }
+
+  .slide-quote blockquote {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 52px;
+    font-weight: 400;
+    font-style: italic;
+    color: var(--charcoal);
+    line-height: 1.35;
+    letter-spacing: -0.5px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .slide-quote blockquote span {
+    color: var(--maroon);
+  }
+
+  /* ============================================
+     SLIDE 3 - TIMELINE
+     ============================================ */
+  .slide-timeline {
+    background: var(--cream);
+    align-items: flex-start;
+    padding: 0 0 0 14%;
+    justify-content: center;
+  }
+
+  .slide-timeline .orb-a {
+    width: 500px; height: 500px;
+    top: -5%; right: -10%;
+    opacity: 0.25;
+    animation: float2 13s ease-in-out infinite;
+  }
+
+  .slide-timeline .orb-b {
+    width: 300px; height: 300px;
+    bottom: 10%; left: 5%;
+    opacity: 0.15;
+    animation: float3 9s ease-in-out infinite;
+  }
+
+  .slide-timeline .tl-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--warm-gray);
+    margin-bottom: 52px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .slide-timeline .tl-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .slide-timeline .tl-item {
+    display: flex;
+    align-items: baseline;
+    gap: 32px;
+  }
+
+  .slide-timeline .tl-date {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--rose);
+    min-width: 120px;
+    text-align: right;
+    text-shadow: 0 0 20px rgba(234,208,213,0.2);
+  }
+
+  .slide-timeline .tl-divider {
+    width: 1.5px;
+    height: 48px;
+    background: linear-gradient(180deg, transparent, var(--rose), transparent);
+    flex-shrink: 0;
+    align-self: center;
+  }
+
+  .slide-timeline .tl-text {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 38px;
+    font-weight: 400;
+    color: var(--warm-gray);
+    letter-spacing: -0.3px;
+    line-height: 1.2;
+    padding: 10px 0;
+  }
+
+  .slide-timeline .tl-item.highlight .tl-text {
+    font-weight: 600;
+    color: var(--charcoal);
+  }
+
+  /* ============================================
+     SLIDE 4 - WE PAUSED TO BUILD
+     ============================================ */
+  .slide-paused {
+    background: var(--cream);
+    text-align: center;
+  }
+
+  .slide-paused .orb-a {
+    width: 600px; height: 600px;
+    top: 20%; left: 30%;
+    opacity: 0.3;
+    animation: float1 16s ease-in-out infinite;
+  }
+
+  .slide-paused .orb-b {
+    width: 300px; height: 300px;
+    bottom: 20%; right: 10%;
+    opacity: 0.2;
+    animation: float2 10s ease-in-out infinite;
+  }
+
+  .slide-paused h2 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 80px;
+    font-weight: 300;
+    color: var(--charcoal);
+    letter-spacing: -1.5px;
+    line-height: 1.1;
+    margin-bottom: 64px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .slide-paused h2 em {
+    font-style: italic;
+    color: var(--maroon);
+  }
+
+  .slide-paused .pillars {
+    display: flex;
+    justify-content: center;
+    gap: 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .slide-paused .pillar-word {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--warm-gray);
+    position: relative;
+    padding-top: 20px;
+  }
+
+  .slide-paused .pillar-word::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 24px;
+    height: 2px;
+    background: var(--maroon);
+  }
+
+  /* ============================================
+     SLIDE 5 - FACILITY COLLAGE
+     ============================================ */
+  .slide-facility {
+    background: var(--charcoal);
+    padding: 0;
+  }
+
+  .slide-facility .facility-collage {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-columns: 1.8fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 3px;
+  }
+
+  .slide-facility .f-photo {
+    background-size: cover;
+    background-position: center;
+    position: relative;
+  }
+
+  .slide-facility .f-photo.tall { grid-row: span 2; }
+
+  .slide-facility .f-photo::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(28,25,23,0.2) 0%, rgba(28,25,23,0.5) 100%);
+  }
+
+  .slide-facility .f-overlay {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 24px 28px;
+    z-index: 2;
+  }
+
+  .slide-facility .f-overlay h3 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 28px;
+    font-weight: 400;
+    color: #fff;
+  }
+
+  .slide-facility .f-overlay span {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--rose);
+    display: block;
+    margin-bottom: 6px;
+    text-shadow: 0 0 10px rgba(234,208,213,0.3);
+  }
+
+  /* ============================================
+     SLIDE 6 - $750K BILLBOARD
+     ============================================ */
+  .slide-750k {
+    background: var(--cream);
+    text-align: center;
+  }
+
+  .slide-750k .orb-a {
+    width: 700px; height: 700px;
+    top: 10%; left: 20%;
+    opacity: 0.35;
+    animation: float1 14s ease-in-out infinite, pulse 6s ease-in-out infinite;
+  }
+
+  .slide-750k .orb-b {
+    width: 400px; height: 400px;
+    bottom: 5%; right: 15%;
+    opacity: 0.15;
+    animation: float2 11s ease-in-out infinite;
+  }
+
+  .slide-750k .metric-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--warm-gray);
+    margin-bottom: 24px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .slide-750k .metric-number {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 180px;
+    font-weight: 700;
+    color: var(--maroon);
+    line-height: 0.85;
+    letter-spacing: -6px;
+    position: relative;
+    z-index: 1;
+    text-shadow: 0 0 80px rgba(122,11,5,0.12);
+  }
+
+  .slide-750k .metric-sub {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 24px;
+    font-weight: 400;
+    color: var(--warm-gray);
+    margin-top: 28px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ============================================
+     SLIDE 7 - $3M+ BILLBOARD
+     ============================================ */
+  .slide-3m {
+    background: var(--cream);
+    text-align: center;
+  }
+
+  .slide-3m .orb-a {
+    width: 500px; height: 500px;
+    top: 15%; right: 10%;
+    opacity: 0.35;
+    animation: float2 12s ease-in-out infinite, pulse 7s ease-in-out infinite;
+  }
+
+  .slide-3m .orb-b {
+    width: 400px; height: 400px;
+    bottom: 10%; left: 10%;
+    opacity: 0.12;
+    animation: float1 15s ease-in-out infinite;
+  }
+
+  .slide-3m .chart-bg {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 45%;
+    opacity: 0.06;
+  }
+
+  .slide-3m .chart-bg svg { width: 100%; height: 100%; }
+
+  .slide-3m .metric-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--warm-gray);
+    margin-bottom: 24px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .slide-3m .metric-number {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 180px;
+    font-weight: 700;
+    color: var(--maroon);
+    line-height: 0.85;
+    letter-spacing: -6px;
+    position: relative;
+    z-index: 1;
+    text-shadow: 0 0 80px rgba(122,11,5,0.12);
+  }
+
+  .slide-3m .metric-sub {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 24px;
+    font-weight: 400;
+    color: var(--warm-gray);
+    margin-top: 28px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .slide-3m .metric-context {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--warm-gray-light);
+    margin-top: 12px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ============================================
+     SLIDE 8 - THE ROAD AHEAD
+     ============================================ */
+  .slide-ahead {
+    background: var(--maroon);
+    align-items: flex-start;
+    padding: 0 0 0 14%;
+    justify-content: center;
+  }
+
+  .slide-ahead .orb-a {
+    width: 500px; height: 500px;
+    top: 5%; right: 0%;
+    opacity: 0.15;
+    animation: float1 14s ease-in-out infinite;
+  }
+
+  .slide-ahead .orb-b {
+    width: 350px; height: 350px;
+    bottom: 15%; left: 40%;
+    opacity: 0.06;
+    animation: float3 11s ease-in-out infinite;
+  }
+
+  .slide-ahead .ahead-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--warm-gray);
+    margin-bottom: 52px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .slide-ahead .ahead-list {
+    display: flex;
+    flex-direction: column;
+    gap: 36px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .slide-ahead .ahead-item {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 48px;
+    font-weight: 400;
+    color: rgba(255,255,255,0.75);
+    letter-spacing: -0.5px;
+    line-height: 1.15;
+    padding-left: 32px;
+    border-left: 2px solid var(--rose);
+    transition: color 0.3s;
+  }
+
+  .slide-ahead .ahead-item:hover {
+    color: #fff;
+  }
+
+  .slide-ahead .ahead-item em {
+    font-style: normal;
+    color: var(--rose);
+    text-shadow: 0 0 30px rgba(234,208,213,0.2);
+  }
+
+  /* ============================================
+     SLIDE 9 - CLOSING
+     ============================================ */
+  .slide-closing {
+    background: var(--cream);
+    text-align: center;
+  }
+
+  .slide-closing .orb-a {
+    width: 550px; height: 550px;
+    top: 15%; left: 25%;
+    opacity: 0.4;
+    animation: float1 15s ease-in-out infinite, pulse 8s ease-in-out infinite;
+  }
+
+  .slide-closing .orb-b {
+    width: 350px; height: 350px;
+    bottom: 20%; right: 20%;
+    opacity: 0.2;
+    animation: float2 12s ease-in-out infinite;
+  }
+
+  .slide-closing .logo-mark {
+    position: relative;
+    z-index: 1;
+    margin-bottom: 40px;
+  }
+
+  .slide-closing .logo-mark img {
+    width: 90px;
+    opacity: 0.8;
+    filter: drop-shadow(0 0 40px rgba(234,208,213,0.3));
+  }
+
+  .slide-closing h2 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 72px;
+    font-weight: 300;
+    color: var(--charcoal);
+    letter-spacing: -1px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .slide-closing .tagline {
+    margin-top: 24px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--maroon);
+    opacity: 0.7;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ============================================
+     ANIMATIONS
+     ============================================ */
+  .fade-up {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.9s cubic-bezier(0.4, 0, 0.2, 1), transform 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .slide.active .fade-up { opacity: 1; transform: translateY(0); }
+
+  .fade-in {
+    opacity: 0;
+    transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .slide.active .fade-in { opacity: 1; }
+
+  .slide.active .d1 { transition-delay: 0.1s; }
+  .slide.active .d2 { transition-delay: 0.25s; }
+  .slide.active .d3 { transition-delay: 0.4s; }
+  .slide.active .d4 { transition-delay: 0.55s; }
+  .slide.active .d5 { transition-delay: 0.7s; }
+  .slide.active .d6 { transition-delay: 0.85s; }
+  .slide.active .d7 { transition-delay: 1.0s; }
+
+  .scale-in {
+    opacity: 0;
+    transform: scale(0.92);
+    transition: opacity 1s cubic-bezier(0.4, 0, 0.2, 1), transform 1s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .slide.active .scale-in { opacity: 1; transform: scale(1); }
+
+  @media print {
+    .grain, .nav-bar { display: none; }
+    .slide { position: relative; page-break-after: always; opacity: 1; pointer-events: auto; }
+    .orb { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Global grain texture -->
+<div class="grain"></div>
+
+<div class="deck" id="deck">
+
+  <!-- SLIDE 1: TITLE -->
+  <div class="slide slide-title active" data-slide="0">
+    <div class="orb orb-rose orb-a"></div>
+    <div class="orb orb-maroon orb-b"></div>
+    <div class="orb orb-cream orb-c"></div>
+    <div class="logo-mark fade-up">
+      <img src="extracted_images/slide1_img0_4059704x3200400.png" alt="Hart Medical">
+    </div>
+    <h1 class="fade-up d1">Hart Medical</h1>
+    <div class="sub fade-up d2">NDC Conference &middot; April 2026</div>
+  </div>
+
+  <!-- SLIDE 2: THE QUOTE -->
+  <div class="slide slide-quote" data-slide="1">
+    <div class="orb orb-rose orb-a"></div>
+    <div class="orb orb-maroon orb-b"></div>
+    <blockquote class="fade-up">
+      We built the <span>foundation</span> first,<br>
+      and now the sales engine<br>
+      is <span>fully engaged.</span>
+    </blockquote>
+  </div>
+
+  <!-- SLIDE 3: TIMELINE -->
+  <div class="slide slide-timeline" data-slide="2">
+    <div class="orb orb-rose orb-a"></div>
+    <div class="orb orb-maroon orb-b"></div>
+    <div class="tl-label fade-up">Our Journey</div>
+    <div class="tl-list">
+      <div class="tl-item highlight fade-up d1">
+        <div class="tl-date">Apr 2024</div>
+        <div class="tl-divider"></div>
+        <div class="tl-text">Company founded</div>
+      </div>
+      <div class="tl-item fade-up d2">
+        <div class="tl-date">Aug 2024</div>
+        <div class="tl-divider"></div>
+        <div class="tl-text">First sales, first accounts</div>
+      </div>
+      <div class="tl-item highlight fade-up d3">
+        <div class="tl-date">Mar 2025</div>
+        <div class="tl-divider"></div>
+        <div class="tl-text">Paused to build infrastructure</div>
+      </div>
+      <div class="tl-item highlight fade-up d4">
+        <div class="tl-date">Aug 2025</div>
+        <div class="tl-divider"></div>
+        <div class="tl-text">Full go-to-market launch</div>
+      </div>
+      <div class="tl-item fade-up d5">
+        <div class="tl-date">2026</div>
+        <div class="tl-divider"></div>
+        <div class="tl-text">Accelerating growth</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 4: WE PAUSED TO BUILD -->
+  <div class="slide slide-paused" data-slide="3">
+    <div class="orb orb-rose orb-a"></div>
+    <div class="orb orb-maroon orb-b"></div>
+    <h2 class="fade-up">We paused growth<br>to <em>build it right.</em></h2>
+    <div class="pillars fade-up d2">
+      <div class="pillar-word">Systems</div>
+      <div class="pillar-word">Vendors</div>
+      <div class="pillar-word">Process</div>
+      <div class="pillar-word">Facility</div>
+    </div>
+  </div>
+
+  <!-- SLIDE 5: FACILITY COLLAGE -->
+  <div class="slide slide-facility" data-slide="4">
+    <div class="facility-collage fade-in">
+      <div class="f-photo tall" style="background-image: url('IMG_3625.jpg')">
+        <div class="f-overlay">
+          <span>Warehouse</span>
+          <h3>Stocked &amp; ready</h3>
+        </div>
+      </div>
+      <div class="f-photo" style="background-image: url('IMG_4834.jpg')"></div>
+      <div class="f-photo" style="background-image: url('IMG_5224.jpg')"></div>
+      <div class="f-photo" style="background-image: url('IMG_3624.jpg')"></div>
+      <div class="f-photo" style="background-image: url('IMG_4837.jpg')">
+        <div class="f-overlay">
+          <span>Headquarters</span>
+          <h3>Hart Medical HQ</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 6: $750K -->
+  <div class="slide slide-750k" data-slide="5">
+    <div class="orb orb-rose orb-a"></div>
+    <div class="orb orb-maroon orb-b"></div>
+    <div class="metric-label fade-up">Revenue to Date</div>
+    <div class="metric-number scale-in d1">$750K</div>
+    <div class="metric-sub fade-up d2">generated since August 2024</div>
+  </div>
+
+  <!-- SLIDE 7: $3M+ -->
+  <div class="slide slide-3m" data-slide="6">
+    <div class="orb orb-rose orb-a"></div>
+    <div class="orb orb-maroon orb-b"></div>
+    <div class="chart-bg">
+      <svg viewBox="0 0 1200 400" preserveAspectRatio="none">
+        <path d="M0 400 L200 380 L400 350 L600 310 L800 250 L1000 120 L1200 0 L1200 400 Z" fill="var(--rose)"/>
+      </svg>
+    </div>
+    <div class="metric-label fade-up">2026 Projection</div>
+    <div class="metric-number scale-in d1">$3M+</div>
+    <div class="metric-sub fade-up d2">on pace to exceed this year</div>
+    <div class="metric-context fade-up d3">4x year-over-year growth</div>
+  </div>
+
+  <!-- SLIDE 8: ROAD AHEAD -->
+  <div class="slide slide-ahead" data-slide="7">
+    <div class="orb orb-rose orb-a"></div>
+    <div class="orb orb-maroon orb-b"></div>
+    <div class="ahead-label fade-up">What's Next</div>
+    <div class="ahead-list">
+      <div class="ahead-item fade-up d1">Expand the <em>sales team</em></div>
+      <div class="ahead-item fade-up d2">Deepen <em>account penetration</em></div>
+      <div class="ahead-item fade-up d3">Accelerate <em>new customer acquisition</em></div>
+    </div>
+  </div>
+
+  <!-- SLIDE 9: CLOSING -->
+  <div class="slide slide-closing" data-slide="8">
+    <div class="orb orb-rose orb-a"></div>
+    <div class="orb orb-maroon orb-b"></div>
+    <div class="logo-mark fade-up">
+      <img src="extracted_images/slide1_img0_4059704x3200400.png" alt="Hart Medical">
+    </div>
+    <h2 class="fade-up d1">Thank You</h2>
+    <div class="tagline fade-up d2">Built Right &middot; Built to Scale</div>
+  </div>
+
+</div>
+
+<!-- Nav -->
+<div class="nav-bar">
+  <div class="slide-counter"><span id="currentSlide">1</span> / <span id="totalSlides">9</span></div>
+  <div class="progress-bar">
+    <div class="progress-fill" id="progressFill" style="width: 11.1%"></div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  let current = 0;
+
+  function goTo(n) {
+    if (n < 0 || n >= total) return;
+    slides[current].classList.remove('active');
+    current = n;
+    slides[current].classList.add('active');
+    document.getElementById('currentSlide').textContent = current + 1;
+    document.getElementById('progressFill').style.width = ((current + 1) / total * 100) + '%';
+  }
+
+  function next() { goTo(current + 1); }
+  function prev() { goTo(current - 1); }
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); next(); }
+    if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); prev(); }
+    if (e.key === 'Home') { e.preventDefault(); goTo(0); }
+    if (e.key === 'End') { e.preventDefault(); goTo(total - 1); }
+  });
+
+  document.querySelector('.deck').addEventListener('click', function(e) {
+    if (e.target.closest('.nav-bar')) return;
+    if (e.clientX < window.innerWidth / 3) prev();
+    else next();
+  });
+
+  let touchStartX = 0;
+  document.addEventListener('touchstart', function(e) { touchStartX = e.touches[0].clientX; });
+  document.addEventListener('touchend', function(e) {
+    const diff = touchStartX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) { diff > 0 ? next() : prev(); }
+  });
+})();
+</script>
+
+</body>
+</html>
